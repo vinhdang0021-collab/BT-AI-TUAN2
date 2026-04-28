@@ -1,0 +1,84 @@
+pip install scikit-fuzzy
+import numpy as np
+import skfuzzy as fuzzy
+from skfuzzy import control as ctrl
+
+Order_Density = ctrl.Antecedent(np.arange(0, 11, 1), 'Order_Density')
+Dilivery_Urgency = ctrl.Antecedent(np.arange(0, 11, 1), 'Dilivery_Urgency')
+Driver_Current_Load = ctrl.Antecedent(np.arange(0, 11, 1), 'Driver_Current_Load')
+Traffic_condition = ctrl.Antecedent(np.arange(0, 11, 1), 'Traffic_condition')
+Profit_Per_Dilivery= ctrl.Antecedent(np.arange(0, 11, 1), 'Profit_Per_Dilivery')
+
+Number_of_Orders_to_Combine = ctrl.Consequent(np.arange(0, 11, 1), 'Number_of_Orders_to_Combine')
+Dilivery_Priority= ctrl.Consequent(np.arange(0, 11, 1), 'Dilivery_Priority')
+
+Order_Density['Low'] = fuzzy.trimf(Order_Density.universe, [0, 0, 5])
+Order_Density['Medium'] = fuzzy.trimf(Order_Density.universe, [0, 5, 10])
+Order_Density['High'] = fuzzy.trimf(Order_Density.universe, [5, 10, 10])
+
+Dilivery_Urgency['Low'] = fuzzy.trimf(Dilivery_Urgency.universe, [0, 0, 5])
+Dilivery_Urgency['Medium'] = fuzzy.trimf(Dilivery_Urgency.universe, [0, 5, 10])
+Dilivery_Urgency['High'] = fuzzy.trimf(Dilivery_Urgency.universe, [5, 10, 10])
+
+Driver_Current_Load['Low'] = fuzzy.trimf(Driver_Current_Load.universe, [0, 0, 5])
+Driver_Current_Load['Medium'] = fuzzy.trimf(Driver_Current_Load.universe, [0, 5, 10])
+Driver_Current_Load['High'] = fuzzy.trimf(Driver_Current_Load.universe, [5, 10, 10])
+
+Traffic_condition['Low'] = fuzzy.trimf(Traffic_condition.universe, [0, 0, 5])
+Traffic_condition['Medium'] = fuzzy.trimf(Traffic_condition.universe, [0, 5, 10])
+Traffic_condition['High'] = fuzzy.trimf(Traffic_condition.universe, [5, 10, 10])
+
+Profit_Per_Dilivery['Low'] = fuzzy.trimf(Profit_Per_Dilivery.universe, [0, 0, 5])
+Profit_Per_Dilivery['Medium'] = fuzzy.trimf(Profit_Per_Dilivery.universe, [0, 5, 10])
+Profit_Per_Dilivery['High'] = fuzzy.trimf(Profit_Per_Dilivery.universe, [5, 10, 10])
+
+Number_of_Orders_to_Combine['Ít'] = fuzzy.trimf(Number_of_Orders_to_Combine.universe, [0, 0, 5])
+Number_of_Orders_to_Combine['Một số'] = fuzzy.trimf(Number_of_Orders_to_Combine.universe, [3, 5, 7])
+Number_of_Orders_to_Combine['Nhiều'] = fuzzy.trimf(Number_of_Orders_to_Combine.universe, [5, 10, 10])
+
+Dilivery_Priority['Thấp'] = fuzzy.trimf(Dilivery_Priority.universe, [0, 0, 5])
+Dilivery_Priority['Trung bình'] = fuzzy.trimf(Dilivery_Priority.universe, [3, 5, 7])
+Dilivery_Priority['Cao'] = fuzzy.trimf(Dilivery_Priority.universe, [5, 10, 10])
+
+
+Order_Density.view()
+Dilivery_Urgency.view()
+Driver_Current_Load.view()
+Traffic_condition.view()
+Profit_Per_Dilivery.view()
+Number_of_Orders_to_Combine.view()
+Dilivery_Priority.view()
+
+rule1 = ctrl.Rule(Order_Density['High'] & Driver_Current_Load['Low'] & Traffic_condition['Low'], Number_of_Orders_to_Combine['Nhiều'])
+rule2 = ctrl.Rule(Order_Density['Medium'] & Traffic_condition['High'] & Dilivery_Urgency['Medium'], Number_of_Orders_to_Combine['Một số'])
+rule3 = ctrl.Rule(Driver_Current_Load['High'] & Order_Density['High'] & Profit_Per_Dilivery['Medium'], Number_of_Orders_to_Combine['Một số'])
+rule4 = ctrl.Rule(Order_Density['Low'] & Dilivery_Urgency['High'] & Traffic_condition['Medium'],  Number_of_Orders_to_Combine['Một số'])
+rule5 = ctrl.Rule(Profit_Per_Dilivery['High'] & Dilivery_Urgency['High']& Traffic_condition['High'], Number_of_Orders_to_Combine['Một số'])
+rule6 = ctrl.Rule(Dilivery_Urgency['High'] & Profit_Per_Dilivery['High'] ,Dilivery_Priority['Cao'])
+rule7 = ctrl.Rule(Dilivery_Urgency['Medium'] & Traffic_condition['Medium'] ,Dilivery_Priority['Trung bình'])
+rule8 = ctrl.Rule(Dilivery_Urgency['Low'] & Order_Density['High'] &  Profit_Per_Dilivery['Low'], Dilivery_Priority['Thấp'])
+
+Number_of_Orders_to_Combine_ctrl = ctrl.ControlSystem([rule1, rule2, rule3, rule4, rule5,])
+Dilivery_Priority_ctrl = ctrl.ControlSystem([rule6,rule7, rule8,])
+Number_of_Orders_to_Combine_sim = ctrl.ControlSystemSimulation(Number_of_Orders_to_Combine_ctrl)
+Dilivery_Priority_sim = ctrl.ControlSystemSimulation(Dilivery_Priority_ctrl)
+
+Number_of_Orders_to_Combine_sim.input['Order_Density'] = 6
+Number_of_Orders_to_Combine_sim.input['Dilivery_Urgency'] = 7
+Number_of_Orders_to_Combine_sim.input['Driver_Current_Load'] = 4
+Number_of_Orders_to_Combine_sim.input['Traffic_condition'] = 8
+Number_of_Orders_to_Combine_sim.input['Profit_Per_Dilivery'] = 5
+
+Dilivery_Priority_sim.input['Dilivery_Urgency'] = 8
+Dilivery_Priority_sim.input['Profit_Per_Dilivery'] = 9
+Dilivery_Priority_sim.input['Traffic_condition'] = 7
+Dilivery_Priority_sim.input['Order_Density'] = 6
+
+Number_of_Orders_to_Combine_sim.compute()
+Dilivery_Priority_sim.compute()
+
+print(" Đơn hàng cần kết hợp là:",Number_of_Orders_to_Combine_sim.output['Number_of_Orders_to_Combine'])
+print("Ưu tiên giao hàng:",Dilivery_Priority_sim.output['Dilivery_Priority'])
+
+Number_of_Orders_to_Combine.view(sim=Number_of_Orders_to_Combine_sim)
+Dilivery_Priority.view(sim=Dilivery_Priority_sim)
