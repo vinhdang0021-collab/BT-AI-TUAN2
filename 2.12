@@ -1,0 +1,71 @@
+pip install scikit-fuzzy
+import numpy as np
+import skfuzzy as fuzzy
+from skfuzzy import control as ctrl
+
+Store_rating = ctrl.Antecedent(np.arange(0, 5.1, 0.1), 'Store_rating')
+Sales_Volume = ctrl.Antecedent(np.arange(0, 101, 1), 'Sales_Volume')
+Profit_Margin = ctrl.Antecedent(np.arange(0, 101, 1), 'Profit_Margin')
+Seasonal_Event = ctrl.Antecedent(np.arange(0, 11, 1), 'Seasonal_Event')
+Compertitor_Discounts = ctrl.Antecedent(np.arange(1, 101, 1), 'Compertitor_Discounts')
+
+Tỷ_lệ_phần_Trăm_Chiết_Khấu = ctrl.Consequent(np.arange(0, 70.1, 0.1), 'Tỷ_lệ_phần_Trăm_Chiết_Khấu')
+
+Store_rating['Low'] = fuzzy.trimf(Store_rating.universe, [0, 0, 4])
+Store_rating['Medium'] = fuzzy.trimf(Store_rating.universe, [4, 4.25, 4.5])
+Store_rating['High'] = fuzzy.trimf(Store_rating.universe, [4.5, 5, 5])
+
+
+Sales_Volume['Low'] = fuzzy.trimf(Sales_Volume.universe, [0, 20, 50])
+Sales_Volume['Medium'] = fuzzy.trimf(Sales_Volume.universe, [40, 60, 80])
+Sales_Volume['High'] = fuzzy.trimf(Sales_Volume.universe, [80, 90, 100])
+
+Profit_Margin['Low'] = fuzzy.trimf(Profit_Margin.universe, [0, 0, 30])
+Profit_Margin['Medium'] = fuzzy.trimf(Profit_Margin.universe, [20, 50, 70])
+Profit_Margin['High'] = fuzzy.trimf(Profit_Margin.universe, [60, 80, 100])
+
+Seasonal_Event['None'] = fuzzy.trimf(Seasonal_Event.universe, [0, 0, 3])
+Seasonal_Event['Moderate'] = fuzzy.trimf(Seasonal_Event.universe, [2, 5, 7])
+Seasonal_Event['High'] = fuzzy.trimf(Seasonal_Event.universe, [6, 8, 10])
+
+Compertitor_Discounts['Low'] = fuzzy.trimf(Compertitor_Discounts.universe, [0, 0, 30])
+Compertitor_Discounts['Medium'] = fuzzy.trimf(Compertitor_Discounts.universe, [20, 50, 70])
+Compertitor_Discounts['High'] = fuzzy.trimf(Compertitor_Discounts.universe, [60, 80, 100])
+
+
+Tỷ_lệ_phần_Trăm_Chiết_Khấu['Rất thấp'] = fuzzy.trimf(Tỷ_lệ_phần_Trăm_Chiết_Khấu.universe, [0, 0, 5])
+Tỷ_lệ_phần_Trăm_Chiết_Khấu['Thấp'] = fuzzy.trimf(Tỷ_lệ_phần_Trăm_Chiết_Khấu.universe, [5, 7.5, 10])
+Tỷ_lệ_phần_Trăm_Chiết_Khấu['Trung bình'] = fuzzy.trimf(Tỷ_lệ_phần_Trăm_Chiết_Khấu.universe, [10, 15, 20])
+Tỷ_lệ_phần_Trăm_Chiết_Khấu['Cao'] = fuzzy.trimf(Tỷ_lệ_phần_Trăm_Chiết_Khấu.universe, [20, 32, 40])
+Tỷ_lệ_phần_Trăm_Chiết_Khấu['Rất cao'] = fuzzy.trimf(Tỷ_lệ_phần_Trăm_Chiết_Khấu.universe, [40, 55, 70])
+
+Store_rating.view()
+Sales_Volume.view()
+Profit_Margin.view()
+Seasonal_Event.view()
+Compertitor_Discounts.view()
+Tỷ_lệ_phần_Trăm_Chiết_Khấu.view()
+
+rule1 = ctrl.Rule(Store_rating['High'] & Sales_Volume['High'] & Profit_Margin['High'], Tỷ_lệ_phần_Trăm_Chiết_Khấu['Rất thấp'])
+rule2 = ctrl.Rule(Store_rating['Low'] & Sales_Volume['Low'] & Profit_Margin['High'], Tỷ_lệ_phần_Trăm_Chiết_Khấu['Cao'])
+rule3 = ctrl.Rule(Seasonal_Event['High'] & Compertitor_Discounts['High'],Tỷ_lệ_phần_Trăm_Chiết_Khấu['Rất cao'])
+rule4 = ctrl.Rule(Store_rating['Medium'] & Sales_Volume['Medium'] & Profit_Margin['Medium'],  Tỷ_lệ_phần_Trăm_Chiết_Khấu['Trung bình'])
+rule5 = ctrl.Rule(Compertitor_Discounts['Low'] & Profit_Margin['Low']& Sales_Volume['High'], Tỷ_lệ_phần_Trăm_Chiết_Khấu['Rất thấp'])
+rule6 = ctrl.Rule(Store_rating['Low'] & Seasonal_Event['None'] , Tỷ_lệ_phần_Trăm_Chiết_Khấu['Trung bình'])
+rule7 = ctrl.Rule(Store_rating['Low'] & Profit_Margin['Low'] , Tỷ_lệ_phần_Trăm_Chiết_Khấu['Rất cao'])
+
+Tỷ_lệ_phần_Trăm_Chiết_Khấu_ctrl = ctrl.ControlSystem([rule1, rule2, rule3, rule4, rule5, rule6, rule7,])
+
+Tỷ_lệ_phần_Trăm_Chiết_Khấu_sim = ctrl.ControlSystemSimulation(Tỷ_lệ_phần_Trăm_Chiết_Khấu_ctrl)
+
+Tỷ_lệ_phần_Trăm_Chiết_Khấu_sim.input['Store_rating'] = 4.75
+Tỷ_lệ_phần_Trăm_Chiết_Khấu_sim.input['Sales_Volume'] = 90
+Tỷ_lệ_phần_Trăm_Chiết_Khấu_sim.input['Profit_Margin'] = 80
+Tỷ_lệ_phần_Trăm_Chiết_Khấu_sim.input['Seasonal_Event'] = 9
+Tỷ_lệ_phần_Trăm_Chiết_Khấu_sim.input['Compertitor_Discounts'] = 18
+
+Tỷ_lệ_phần_Trăm_Chiết_Khấu_sim.compute()
+
+print("Phần trăm chiết khấu là:",Tỷ_lệ_phần_Trăm_Chiết_Khấu_sim.output['Tỷ_lệ_phần_Trăm_Chiết_Khấu'])
+
+Tỷ_lệ_phần_Trăm_Chiết_Khấu.view(sim=Tỷ_lệ_phần_Trăm_Chiết_Khấu_sim)
