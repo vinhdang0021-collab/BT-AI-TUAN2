@@ -1,0 +1,103 @@
+pip install scikit-fuzzy
+import numpy as np
+import skfuzzy as fuzzy
+from skfuzzy import control as ctrl
+
+Ride_Distance = ctrl.Antecedent(np.arange(0, 51, 1), 'Ride Distance')
+Traffic_condition = ctrl.Antecedent(np.arange(0, 101, 1), 'Traffic condition')
+Demand_Level = ctrl.Antecedent(np.arange(0, 101, 1), 'Demand Level')
+Weather_condition = ctrl.Antecedent(np.arange(0, 101, 1), 'Weather condition')
+Customer_rating = ctrl.Antecedent(np.arange(1, 5.1, 0.1), 'Customer rating')
+Ride_punctuality = ctrl.Antecedent(np.arange(0, 101, 1), 'Ride punctuality')
+
+Giá_đi_xe = ctrl.Consequent(np.arange(0, 101, 1), 'Giá_đi_xe')
+Điểm_thưởng_cho_khách_hàng = ctrl.Consequent(np.arange(0, 101, 1), 'Điểm_thưởng_cho_khách_hàng')
+
+Ride_Distance['Short'] = fuzzy.trimf(Ride_Distance.universe, [0, 0, 3])
+Ride_Distance['Medium'] = fuzzy.trimf(Ride_Distance.universe, [2, 5, 8])
+Ride_Distance['Long'] = fuzzy.trimf(Ride_Distance.universe, [6, 12, 20])
+Ride_Distance['Very Long'] = fuzzy.trimf(Ride_Distance.universe, [15, 30, 50])
+
+Traffic_condition['Low'] = fuzzy.trimf(Traffic_condition.universe, [0, 0, 30])
+Traffic_condition['Medium'] = fuzzy.trimf(Traffic_condition.universe, [20, 50, 70])
+Traffic_condition['High'] = fuzzy.trimf(Traffic_condition.universe, [60, 80, 100])
+
+Demand_Level['Low'] = fuzzy.trimf(Demand_Level.universe, [0, 0, 30])
+Demand_Level['Medium'] = fuzzy.trimf(Demand_Level.universe, [20, 50, 70])
+Demand_Level['High'] = fuzzy.trimf(Demand_Level.universe, [60, 80, 100])
+
+Weather_condition['Good'] = fuzzy.trimf(Weather_condition.universe, [0, 0, 30])
+Weather_condition['Moderate'] = fuzzy.trimf(Weather_condition.universe, [20, 50, 70])
+Weather_condition['Bad'] = fuzzy.trimf(Weather_condition.universe, [60, 80, 100])
+
+Customer_rating['Poor'] = fuzzy.trimf(Customer_rating.universe, [1.0, 1.5, 2.5])
+Customer_rating['Average'] = fuzzy.trimf(Customer_rating.universe, [2.1, 3.0, 4.0])
+Customer_rating['Good'] = fuzzy.trimf(Customer_rating.universe, [3.5, 4.5, 5.0])
+
+Ride_punctuality['Late'] = fuzzy.trimf(Ride_punctuality.universe, [0, 20, 50])
+Ride_punctuality['On Time'] = fuzzy.trimf(Ride_punctuality.universe, [40, 60, 80])
+Ride_punctuality['Early'] = fuzzy.trimf(Ride_punctuality.universe, [70, 90, 100])
+
+Giá_đi_xe['Low'] = fuzzy.trimf(Giá_đi_xe.universe, [0, 20, 40])
+Giá_đi_xe['Medium'] = fuzzy.trimf(Giá_đi_xe.universe, [30, 50, 70])
+Giá_đi_xe['High'] = fuzzy.trimf(Giá_đi_xe.universe, [60, 80, 100])
+Giá_đi_xe['Very High'] = fuzzy.trimf(Giá_đi_xe.universe, [80, 90, 100])
+
+Điểm_thưởng_cho_khách_hàng['None'] = fuzzy.trimf(Điểm_thưởng_cho_khách_hàng.universe, [0, 0, 20])
+Điểm_thưởng_cho_khách_hàng['Few'] = fuzzy.trimf(Điểm_thưởng_cho_khách_hàng.universe, [10, 30, 50])
+Điểm_thưởng_cho_khách_hàng['Moderate'] = fuzzy.trimf(Điểm_thưởng_cho_khách_hàng.universe, [40, 60, 80])
+Điểm_thưởng_cho_khách_hàng['High'] = fuzzy.trimf(Điểm_thưởng_cho_khách_hàng.universe, [70, 90, 100])
+
+Ride_Distance.view()
+Traffic_condition.view()
+Demand_Level.view()
+Weather_condition.view()
+Customer_rating.view()
+Ride_punctuality.view()
+Giá_đi_xe.view()
+Điểm_thưởng_cho_khách_hàng.view()
+
+rule1 = ctrl.Rule(Ride_Distance['Short'] & Traffic_condition['Low'] & Demand_Level['Low'], Giá_đi_xe['Low'])
+rule2 = ctrl.Rule(Ride_Distance['Short'] & Traffic_condition['Medium'] & Demand_Level['High'], Giá_đi_xe['Medium'])
+rule3 = ctrl.Rule(Ride_Distance['Medium'] & Traffic_condition['High'] & Demand_Level['High'], Giá_đi_xe['High'])
+rule4 = ctrl.Rule(Ride_Distance['Long'] & Traffic_condition['Medium'] & Weather_condition['Good'], Giá_đi_xe['Medium'])
+rule5 = ctrl.Rule(Ride_Distance['Long'] & Traffic_condition['High'] & Weather_condition['Bad'], Giá_đi_xe['Very High'])
+rule6 = ctrl.Rule(Ride_Distance['Very Long'] & Traffic_condition['High'] & Demand_Level['High'], Giá_đi_xe['Very High'])
+rule7 = ctrl.Rule(Ride_Distance['Medium'] & Traffic_condition['Low'] & Demand_Level['Low'], Giá_đi_xe['Medium'])
+rule8 = ctrl.Rule(Ride_Distance['Short'] & Traffic_condition['High'] & Weather_condition['Bad'], Giá_đi_xe['High'])
+rule9 = ctrl.Rule(Ride_Distance['Very Long'] & Weather_condition['Bad'], Giá_đi_xe['Very High'])
+rule10 = ctrl.Rule(Ride_Distance['Medium'] & Traffic_condition['Medium'] & Weather_condition['Moderate'], Giá_đi_xe['Medium'])
+
+rule11 = ctrl.Rule(Customer_rating['Good'] & Ride_punctuality['Early'], Điểm_thưởng_cho_khách_hàng['High'])
+rule12 = ctrl.Rule(Customer_rating['Average'] & Ride_punctuality['On Time'], Điểm_thưởng_cho_khách_hàng['Moderate'])
+rule13 = ctrl.Rule(Customer_rating['Poor'] & Ride_punctuality['Late'], Điểm_thưởng_cho_khách_hàng['None'])
+rule14 = ctrl.Rule(Ride_Distance['Long'] & Traffic_condition['High'] & Ride_punctuality['On Time'], Điểm_thưởng_cho_khách_hàng['High'])
+rule15 = ctrl.Rule(Ride_Distance['Medium'] & Traffic_condition['Medium'] & Customer_rating['Good'], Điểm_thưởng_cho_khách_hàng['Moderate'])
+rule16 = ctrl.Rule(Customer_rating['Poor'] & Ride_punctuality['Late'], Điểm_thưởng_cho_khách_hàng['None'])
+rule17 = ctrl.Rule(Ride_Distance['Very Long'] & Traffic_condition['High'] & Ride_punctuality['On Time'], Điểm_thưởng_cho_khách_hàng['Few'])
+rule18 = ctrl.Rule(Ride_Distance['Short'] & Traffic_condition['Low'] & Ride_punctuality['Late'], Điểm_thưởng_cho_khách_hàng['Few'])
+rule19 = ctrl.Rule(Ride_Distance['Long'] & Traffic_condition['High'] & Customer_rating['Good'], Điểm_thưởng_cho_khách_hàng['Moderate'])
+rule20 = ctrl.Rule(Ride_Distance['Medium'] & Weather_condition['Moderate'] & Customer_rating['Good'], Điểm_thưởng_cho_khách_hàng['Moderate'])
+
+Giá_đi_xe_ctrl = ctrl.ControlSystem([rule1, rule2, rule3, rule4, rule5, rule6, rule7, rule8, rule9, rule10])
+Điểm_thưởng_ctrl = ctrl.ControlSystem([rule11, rule12, rule13, rule14, rule15, rule16, rule17, rule18, rule19, rule20])
+
+Giá_đi_xe_sim = ctrl.ControlSystemSimulation(Giá_đi_xe_ctrl)
+Điểm_thưởng_sim = ctrl.ControlSystemSimulation(Điểm_thưởng_ctrl)
+
+Giá_đi_xe_sim.input['Ride Distance'] = 15
+Giá_đi_xe_sim.input['Traffic condition'] = 70
+Giá_đi_xe_sim.input['Demand Level'] = 65
+Giá_đi_xe_sim.input['Weather condition'] = 80
+
+Điểm_thưởng_sim.input['Customer rating'] = 3.7
+Điểm_thưởng_sim.input['Ride punctuality'] = 55
+
+Giá_đi_xe_sim.compute()
+Điểm_thưởng_sim.compute()
+
+print("Giá đi xe dự đoán:", Giá_đi_xe_sim.output['Giá_đi_xe'])
+print("Điểm thưởng cho khách hàng:", Điểm_thưởng_sim.output['Điểm_thưởng_cho_khách_hàng'])
+
+Giá_đi_xe.view(sim=Giá_đi_xe_sim)
+Điểm_thưởng_cho_khách_hàng.view(sim=Điểm_thưởng_sim)
