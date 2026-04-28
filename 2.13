@@ -1,0 +1,70 @@
+pip install scikit-fuzzy
+import numpy as np
+import skfuzzy as fuzzy
+from skfuzzy import control as ctrl
+
+Product_Demand = ctrl.Antecedent(np.arange(0, 11, 1), 'Product_Demand')
+Competitor_Pricing_Pressure = ctrl.Antecedent(np.arange(0, 11, 1), 'Competitor_Pricing_Pressure')
+Store_Reputation = ctrl.Antecedent(np.arange(0, 5.1, 0.1), 'Store_Reputation')
+Profit_Margin = ctrl.Antecedent(np.arange(0, 11, 1), 'Profit_Margin')
+Seasonal_Demand = ctrl.Antecedent(np.arange(0, 11, 1), 'Seasonal_Demand')
+
+Discount_percentage = ctrl.Consequent(np.arange(0, 70.1, 0.1), 'Discount_percentage')
+
+Product_Demand['Low'] = fuzzy.trimf(Product_Demand.universe, [0, 0, 5])
+Product_Demand['Medium'] = fuzzy.trimf(Product_Demand.universe, [0, 5, 10])
+Product_Demand['High'] = fuzzy.trimf(Product_Demand.universe, [5, 10, 10])
+
+Competitor_Pricing_Pressure['Low'] = fuzzy.trimf(Competitor_Pricing_Pressure.universe, [0, 0, 5])
+Competitor_Pricing_Pressure['Medium'] = fuzzy.trimf(Competitor_Pricing_Pressure.universe, [0, 5, 10])
+Competitor_Pricing_Pressure['High'] = fuzzy.trimf(Competitor_Pricing_Pressure.universe, [5, 10, 10])
+
+Store_Reputation['Low'] = fuzzy.trimf(Store_Reputation.universe, [0, 0, 4])
+Store_Reputation['Medium'] = fuzzy.trimf(Store_Reputation.universe, [4, 4.2, 4.5])
+Store_Reputation['High'] = fuzzy.trimf(Store_Reputation.universe, [4.5, 5, 5])
+
+Profit_Margin['Low'] = fuzzy.trimf(Profit_Margin.universe, [0, 0, 5])
+Profit_Margin['Medium'] = fuzzy.trimf(Profit_Margin.universe, [0, 5, 10])
+Profit_Margin['High'] = fuzzy.trimf(Profit_Margin.universe, [5, 10, 10])
+
+Seasonal_Demand['None'] = fuzzy.trimf(Seasonal_Demand.universe, [0, 0, 5])
+Seasonal_Demand['Medium'] = fuzzy.trimf(Seasonal_Demand.universe, [0, 5, 10])
+Seasonal_Demand['High'] = fuzzy.trimf(Seasonal_Demand.universe, [5, 10, 10])
+
+
+Discount_percentage['Rất thấp'] = fuzzy.trimf(Discount_percentage.universe, [0, 0, 5])
+Discount_percentage['Thấp'] = fuzzy.trimf(Discount_percentage.universe, [5, 7.5, 10])
+Discount_percentage['Trung bình'] = fuzzy.trimf(Discount_percentage.universe, [10, 13, 20])
+Discount_percentage['Cao'] = fuzzy.trimf(Discount_percentage.universe, [20, 35, 40])
+Discount_percentage['Rất cao'] = fuzzy.trimf(Discount_percentage.universe, [40, 56, 70])
+
+Product_Demand.view()
+Competitor_Pricing_Pressure.view()
+Store_Reputation.view()
+Profit_Margin.view()
+Seasonal_Demand.view()
+Discount_percentage.view()
+
+rule1 = ctrl.Rule(Product_Demand['High'] & Competitor_Pricing_Pressure['Low'] & Profit_Margin['Low'], Discount_percentage['Rất thấp'])
+rule2 = ctrl.Rule(Product_Demand['Low'] & Competitor_Pricing_Pressure['High'] & Profit_Margin['High'], Discount_percentage['Cao'])
+rule3 = ctrl.Rule(Store_Reputation['High'] & Profit_Margin['Medium'] & Seasonal_Demand['High'], Discount_percentage['Trung bình'])
+rule4 = ctrl.Rule(Competitor_Pricing_Pressure['High'] & Seasonal_Demand['High'] & Profit_Margin['High'],  Discount_percentage['Rất cao'])
+rule5 = ctrl.Rule(Store_Reputation['Low'] & Product_Demand['Medium']& Profit_Margin['Low'], Discount_percentage['Trung bình'])
+rule6 = ctrl.Rule(Product_Demand['High'] & Seasonal_Demand['None'] & Competitor_Pricing_Pressure['Low'], Discount_percentage['Rất thấp'])
+rule7 = ctrl.Rule(Profit_Margin['High'] & Competitor_Pricing_Pressure['Medium'] & Seasonal_Demand['Medium'], Discount_percentage['Trung bình'])
+
+Discount_percentage_ctrl = ctrl.ControlSystem([rule1, rule2, rule3, rule4, rule5, rule6, rule7,])
+
+Discount_percentage_sim = ctrl.ControlSystemSimulation(Discount_percentage_ctrl)
+
+Discount_percentage_sim.input['Product_Demand'] = 4.25
+Discount_percentage_sim.input['Competitor_Pricing_Pressure'] = 8
+Discount_percentage_sim.input['Store_Reputation'] = 4.6
+Discount_percentage_sim.input['Profit_Margin'] = 8
+Discount_percentage_sim.input['Seasonal_Demand'] = 7
+
+Discount_percentage_sim.compute()
+
+print("Mức giảm giá là:",Discount_percentage_sim.output['Discount_percentage'])
+
+Discount_percentage.view(sim=Discount_percentage_sim)
